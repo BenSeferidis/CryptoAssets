@@ -7,15 +7,6 @@
 
 import Foundation
 
-
-//
-//struct CryptoAssets:Codable{
-//
-////    let next:String
-////    let previous = NSNull()
-//    let assets: [Crypto]
-//}
-
 struct Crypto:Codable{
 
     let id:Int
@@ -24,25 +15,6 @@ struct Crypto:Codable{
  
 }
 
-struct Icons:Codable{
+struct Icon:Codable{
     let image_url:String
 }
-
-//struct Crypto:Codable{
-//
-//    let name:String
-//    let id:String
-//    let image:URL
-//
-//
-//
-//}
-//
-////struct CryptoassetsItem:Codable{
-////
-////    let id:Int
-////    let image_thumbnail_url:URL
-////    let name:String
-////
-////}
-

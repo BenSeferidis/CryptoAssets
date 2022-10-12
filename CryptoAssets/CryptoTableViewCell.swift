@@ -13,10 +13,12 @@ import UIKit
     //image
 
 
+weak var iconImageView : UIImageView!
 struct CryptoTableViewCellViewModel{
     let name:String
     let id:String
     let image:String
+    let iconUrl:URL?
     
 }
 
@@ -49,6 +51,12 @@ class CryptoTableViewCell: UITableViewCell {
         return label
     }()
     
+    private let iconImageView:UIImageView = {
+        let imageView = UIImageView()
+        imageView.backgroundColor  = .systemGray
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
    
     
     //init
@@ -56,13 +64,14 @@ class CryptoTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(nameLabel)
         contentView.addSubview(idLabel)
-        contentView.addSubview(imageLabel)
+//        contentView.addSubview(imageLabel)
+        contentView.addSubview(iconImageView)
       
         
     }
     
     //kano enan array gia ola ta icons tou JSON
-    var icons = [Crypto]()
+    var icons = [Icon]()
     
     func downloadJSON(completed: @escaping () -> () ){
         guard let url  = URL(string: "https://public.arx.net/~chris2/nfts.json")else{
@@ -72,7 +81,7 @@ class CryptoTableViewCell: UITableViewCell {
             //proxorame mono an den paro error
             if err == nil{
                 do{
-                    self.icons = try JSONDecoder().decode([Crypto].self, from: data!)
+                    self.icons = try JSONDecoder().decode([Icon].self, from: data!)
                 }catch{
                     print("error fetching data from api")
                 }
@@ -93,12 +102,20 @@ class CryptoTableViewCell: UITableViewCell {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+        
+        let size: CGFloat = contentView.frame.size.height/1.1
+        iconImageView.frame = CGRect(
+            x: 20,
+            y: (contentView.frame.size.height-size)/2,
+            width: size,
+            height: size
+        )
         nameLabel.sizeToFit()
         idLabel.sizeToFit()
         imageLabel.sizeToFit()
         
         nameLabel.frame = CGRect(
-            x: 25,
+            x: 30 + size,
             y: 0,
             width: contentView.frame.size.width/2,
             height: contentView.frame.size.height/2
@@ -107,19 +124,26 @@ class CryptoTableViewCell: UITableViewCell {
     
        
         idLabel.frame = CGRect(
-            x: 25,
+            x: 30 + size,
             y: contentView.frame.size.height/2  ,
             width: contentView.frame.size.width/2,
             height: contentView.frame.size.height/2
         )
         
         imageLabel.frame = CGRect(
-            x: 150,
+            x: 30 + size,
             y: 0,
             width: (contentView.frame.size.width/2)-15,
             height: contentView.frame.size.height
         )
        
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        iconImageView.image = nil
+        nameLabel.text = nil
+        idLabel.text = nil
     }
     //configure
     
@@ -127,9 +151,16 @@ class CryptoTableViewCell: UITableViewCell {
         nameLabel.text = viewModel.name
         idLabel.text = viewModel.id
         imageLabel.text = viewModel.image
-  
-        
-        
+        if let url = viewModel.iconUrl{
+            let task = URLSession.shared.dataTask(with: url) { [weak self] data , _ , _ in
+                if let data = data {
+                    DispatchQueue.main.async {
+                        self?.iconImageView.image = UIImage(data:data)
+                    }
+                }
+            }
+            task.resume()
+        }
     }
     
 }

@@ -47,27 +47,28 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.dataSource = self //method to generate cells,header and footer before they are displaying
         tableView.delegate = self //method to provide information about these cells, header and footer ....
         
-
-//        
-//        downloadJSON {
-//            print("succes")
-//        }
-   
         
         APICaller.shared.parseJSON{ [weak self] result in
             switch result{
             case.success(let models):
                 
-                self?.viewModels = models.compactMap({
+                self?.viewModels = models.compactMap({ model in
                     //Number Formatter for id gt einai int kai oxi string
-                    let id = $0.id 
+                    let id = model.id
                     let formatter = ViewController.numberFormatter
                     let id_string = formatter.string(from: NSNumber(value: id))
                     
+                    let iconUrl = URL(
+                        string:
+                            APICaller.shared.icons.filter({ icon in
+                                icon.image_url == model.image_url
+                            }).first?.image_url ?? "")
+                    
                    return  CryptoTableViewCellViewModel(
-                    name: $0.name,
+                    name: model.name,
                     id: id_string ?? "N/A",
-                    image: $0.image_url
+                    image:model.image_url,
+                    iconUrl: iconUrl
                     )
                 })
                 
@@ -81,25 +82,25 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-    func downloadJSON(completed: @escaping () -> () ){
-        guard let url  = URL(string: "https://public.arx.net/~chris2/nfts.json")else{
-            return
-        }
-        URLSession.shared.dataTask(with: url) { data, response, err in
-            //proxorame mono an den paro error
-            if err == nil{
-                do{
-                    self.icons = try JSONDecoder().decode([Crypto].self, from: data!)
-                }catch{
-                    print("error fetching data from api")
-                }
-            }
-            
-            DispatchQueue.main.async{
-                completed()
-            }
-        }.resume()
-    }
+//    func downloadJSON(completed: @escaping () -> () ){
+//        guard let url  = URL(string: "https://public.arx.net/~chris2/nfts.json")else{
+//            return
+//        }
+//        URLSession.shared.dataTask(with: url) { data, response, err in
+//            //proxorame mono an den paro error
+//            if err == nil{
+//                do{
+//                    self.icons = try JSONDecoder().decode([Crypto].self, from: data!)
+//                }catch{
+//                    print("error fetching data from api")
+//                }
+//            }
+//
+//            DispatchQueue.main.async{
+//                completed()
+//            }
+//        }.resume()
+//    }
     
 //make a frame
     override func viewDidLayoutSubviews() {
@@ -124,7 +125,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     
         
-//cell.textLabel?.text = "Hello Wolrd"
+        //cell.textLabel?.text = "Hello Wolrd"
  
         cell.configure(with: viewModels[indexPath.row])
         return cell
